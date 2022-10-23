@@ -22,6 +22,25 @@ type Registers struct {
 	Sp uint16
 }
 
+func (r *Registers) GetBC() uint16 {
+	return (uint16(r.B) << 8) + uint16(r.C)
+}
+
+func (r *Registers) GetFlag(shift uint8) bool {
+	return ((r.F >> shift) & 0x01) != 0
+}
+
+func (r *Registers) SetFlag(shift uint8, value bool) {
+	var bit uint8 = 0
+	if value {
+		bit = 1
+	}
+	bit = bit << shift
+
+	var mask uint8 = ^(0x01 << shift)
+	r.F = (r.F & mask) | bit
+}
+
 type Bus struct {
 	Cartridge Cartridge
 }
@@ -45,6 +64,7 @@ func (b *Bus) Write(addr uint16, value uint8) {
 
 type Cpu struct {
 	Registers Registers
+	Bus       Bus
 }
 
 type Cartridge struct {
@@ -119,68 +139,10 @@ func (c *Cartridge) SgbFlag() uint8 {
 	return c.Content[0x0146]
 }
 
-// expectedEntry := []uint8{INS_NOP, INS_JP, 0x50, 0x01}
-// assert.EqualValues(t, NINTENDO_LOGO, bus.Cartridge.Content[ADDR_NINTENDO_LOGO_START:ADDR_NINTENDO_LOGO_END+1])
-// assert.Equal(t, DEST_CODE_JAPAN_AND_OVERSEAS, bus.Cartridge.Read(ADDR_DESTINATION_CODE))
-// assert.Equal(t, LICENSEE_CODE_NINTENDO, bus.Cartridge.Read(ADDR_LICENSEE_CODE_OLD))
-// assert.Equal(t, uint8(0x01), bus.Cartridge.Read(ADDR_ROM_VERSION_NUM))
-// assert.Equal(t, uint(32), GetRomSizeKB(&bus))
-// assert.Equal(t, CART_TYPE_ROM_ONLY, bus.Cartridge.Read(ADDR_CART_TYPE))
-// assert.Equal(t, uint8(0x00), bus.Cartridge.Read(ADDR_SGB_FLAG))
-
-// type RomHeader struct {
-// 	Entry           []uint8 // 4 bytes
-// 	NintendoLogo    []uint8 // 48 bytes
-// 	Title           []uint8 // 12 bytes
-// 	LicenseeCodeNew uint16
-// 	SgbFlag         uint8
-// 	RomType         uint8
-// 	RomSize         uint8
-// 	RamSize         uint8
-// 	DestinationCode uint8
-// 	LicenseeCodeOld uint16
-// 	Version         uint8
-// 	Checksum        uint8
-// 	GlobalChecksum  uint16
-// }
-
-// func RomHeaderFromBytes(b []uint8) RomHeader {
-// 	header := RomHeader{}
-
-// 	header.Entry = make([]uint8, 4)
-// 	copy(header.Entry, b[:4])
-
-// 	header.NintendoLogo = make([]uint8, 48)
-// 	header.Title = make([]uint8, 12)
-
-// 	return header
-// 	// header.
-// }
-
 const (
-	// ADDR_DESTINATION_CODE uint16 = 0x014A
 	DEST_JP_AND_OVERSEAS uint8 = 0x00
-	// DEST_CODE_OVERSEAS_ONLY uint8  = 0x01
-
-	// ADDR_LICENSEE_CODE_OLD uint16 = 0x014B
-	LICENSEE_NINTENDO uint8 = 0x01
-
-	// ADDR_CART_TYPE     uint16 = 0x0147
-	CART_TYPE_ROM_ONLY uint8 = 0x00
-
-	// ADDR_ROM_VERSION_NUM uint16 = 0x014C
-
-	// addrChecksum    uint16 = 0x014D
-	// start           uint16 = 0x0134
-	// ADDR_HEADER_END uint16 = 0x014C
-
-	// ADDR_ENTRY_START uint16 = 0x0100
-	// ADDR_ENTRY_END   uint16 = 0x0103
-
-	// ADDR_NINTENDO_LOGO_START uint16 = 0x0104
-	// ADDR_NINTENDO_LOGO_END   uint16 = 0x0133
-
-	// ADDR_SGB_FLAG uint16 = 0x0146
+	LICENSEE_NINTENDO    uint8 = 0x01
+	CART_TYPE_ROM_ONLY   uint8 = 0x00
 )
 
 var NINTENDO_LOGO = []uint8{
@@ -190,8 +152,6 @@ var NINTENDO_LOGO = []uint8{
 	0xD9, 0x99, 0xBB, 0xBB, 0x67, 0x63, 0x6E, 0x0E, 0xEC, 0xCC,
 	0xDD, 0xDC, 0x99, 0x9F, 0xBB, 0xB9, 0x33, 0x3E,
 }
-
-// type Instruction uint8
 
 const (
 	NOP = 0x00
