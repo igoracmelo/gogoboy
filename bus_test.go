@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 type Bus struct {
 	Cartridge *Cartridge
 }
@@ -18,5 +20,5 @@ func (b *Bus) Write(addr uint16, value uint8) {
 		return
 	}
 
-	panic("not implemented")
+	panic(fmt.Sprintf("(not implemented) address: %04X, value %02X", addr, value))
 }

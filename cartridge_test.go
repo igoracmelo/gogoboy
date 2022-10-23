@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"strings"
 	"testing"
@@ -35,7 +36,7 @@ func (c *Cartridge) Read(addr uint16) uint8 {
 }
 
 func (c *Cartridge) Write(addr uint16, value uint8) {
-	panic("not implemented")
+	panic(fmt.Sprintf("(not implemented) address: %04X, value %02X", addr, value))
 	// c.Content[addr] = value
 }
 
@@ -101,7 +102,7 @@ var NINTENDO_LOGO = []uint8{
 }
 
 func TestCartridgeInfoTetris(t *testing.T) {
-	c, err := CartridgeFromFile("tetris.gb")
+	c, err := CartridgeFromFile("roms/tetris.gb")
 	assert.NoError(t, err)
 
 	expectedEntry := []uint8{NOP, JP, 0x50, 0x01}
